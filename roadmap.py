@@ -13,17 +13,19 @@ class Road:
         for queue in self.queues:
             if queue[0] == next_road_index:
                 queue[1].append(car)
+                return
+        raise KeyError("next road not found!")
 
     def dequeue(self, next_road_index):
         for queue in self.queues:
             if queue[0] == next_road_index:
                 return queue[1].pop(0)
-
+        raise KeyError("next road not found!")
 
 
 class Map:
     def __init__(self, n=10):
-        self.__fist_road_of_cross = [None] * n
+        self.__fist_road_of_cross = [-1] * n
         self.__crosses = [None] * n
         self.roads = []
         self.n = n
@@ -46,6 +48,6 @@ class Map:
                 dst = self.roads[j].dst
                 k = self.__fist_road_of_cross[dst]
                 while k != -1:
-                    self.roads[j].queue.append((k, [], 1))
+                    self.roads[j].queues.append((k, [], 1))
                     k = self.roads[k].next
                 j = self.roads[j].next
