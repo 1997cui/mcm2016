@@ -53,8 +53,20 @@ class CityMap:
             for j in self.vtx[i.dst][1]:
                 i.queues[j]=Queue(index,j,crs_prp[index][j])
         self.floyd()
-    def floyd(self): # !!!
+    def floyd(self):
         self.floyd_network = [[-1 for i in range(self.vtx_num)] for j in range(self.vtx_num)]
+        for i in self.roads:
+            self.floyd_network[i.src][i.dst] = i.floyd_w
+        flag = True
+        while flag:
+            flag = False
+            for i in range(self.vtx_num):
+                for j in range(self.vtx_num):
+                    for k in range(self.vtx_num):
+                        if self.floyd_network[i][k] != -1 and self.floyd_network[k][j] != -1:
+                            if (self.floyd_network[i][j] == -1) or (self.floyd_network[i][j] > self.floyd_network[i][k] + self.floyd_network[k][j]):
+                                self.floyd_network[i][j] = self.floyd_network[i][k] + self.floyd_network[k][j]
+                                flag = True
 
 class TypoEvent():
     def __cmp__(self,other):
