@@ -2,8 +2,6 @@ import heapq
 import math
 import random
 
-react_min_time = 3.0
-
 class Queue():
     def __init__(self,src,dst,k):
         self.src   = src
@@ -28,15 +26,16 @@ class Road:
         self.queues  = {}
 
 class CityMap:
-    def __init__(self,vtx_num,edg_num,edg_prp,crs_prp):
-        self.vtx_num = vtx_num
-        self.edg_num = edg_num
-        self.roads   = []
-        self.cars    = []
-        self.events  = Events()
+    def __init__(self,vtx_num,edg_num,edg_prp,crs_prp,rct_time):
+        self.vtx_num  = vtx_num
+        self.edg_num  = edg_num
+        self.roads    = []
+        self.cars     = []
+        self.events   = Events()
+        self.rct_time = rct_time
+        self.vtx = [[[], []] for i in range(vtx_num)]
         for i in edg_prp:
             self.roads.append(Road(i[0],i[1],i[2],i[3],i[4]))
-        self.vtx = [[[], []] for i in range(vtx_num)]
         for i,j in enumerate(self.roads):
             self.vtx[j.src][1].append(i)
             self.vtx[j.dst][0].append(i)
@@ -54,6 +53,7 @@ class WaitingEvent(TypoEvent):
         self.car_index  = car_index
         self.road_index = road_index
     def __call__(self):
+        print("WaitingEvent : Car %d in Road %d at %d"%(self.car_index,self.road_index,self.time_stamp))
         next_road = city_map.cars[self.car_index].next_road(city_map.roads[self.road_index].dst)
         if next_road is None: return
         city_map.roads[self.road_index].queues[next_road].push(self.car_index)
@@ -66,7 +66,7 @@ class MovingEvent(TypoEvent):
         self.src_road_index = src_road_index
         self.road_index     = road_index
     def __call__(self):
-        print("Car %d from Road %d to Road %d at %d" % (self.car_index, self.src_road_index, self.road_index, self.time_stamp))
+        print("MovingEvent : Car %d from Road %d to Road %d at %d" % (self.car_index, self.src_road_index, self.road_index, self.time_stamp))
         city_map.roads[self.road_index].car_num += 1
         length     = city_map.roads[self.road_index].length
         speed_max  = city_map.roads[self.road_index].speed
@@ -89,6 +89,7 @@ class CheckEvent(TypoEvent):
         self.src_road_index = src_road_index
         self.road_index     = road_index
     def __call__(self):
+        print("CheckEvent : From Road %d tp Road %d at %d"%(self.src_road_index,self.road_index,self.time_stamp))
         try:
             next_car_index = city_map.roads[self.src_road_index].queues[self.road_index].pop()
             city_map.events.push(MovingEvent(
@@ -132,7 +133,7 @@ class Car:
 
 def main():
     global city_map
-    city_map = CityMap(3,2,[[0,1,1,1000,10],[1,2,1,1000,10]],[{1:10},{}])
+    city_map = CityMap(3,2,[[0,1,1,1000,10],[1,2,1,1000,10]],[{1:10},{}],3.0)
     city_map.cars.append(Car(0,0,0,2))
     for i in city_map.cars:
         i()
