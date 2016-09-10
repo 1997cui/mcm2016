@@ -37,7 +37,7 @@ class WaitingStopEvent():
             self.car_index,
             self.road_index
         ))
-        next_car_index = city_map.roads[src_road_index].queues[road_index].pop()
+        next_car_index = city_map.roads[src_road_index].queues[road_index].dequeue()
         city_map.events.push(WaitingStopEvent(
             self.time_stamp + city_map.roads[src_road_index].queues[road_index].delta_time,
             next_car_index,
