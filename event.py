@@ -25,20 +25,22 @@ class WaitingStopEvent():
     def __cmp__(self,other):
         return self.time_stamp < other.time_stamp
     def __call__(self):
+        print self.road_index
+        print city_map.roads
         city_map.roads[self.road_index].car_num += 1
         length     = city_map.roads[self.road_index].length
         speed_max  = city_map.roads[self.road_index].speed
         car_num    = city_map.roads[self.road_index].car_num
         width      = city_map.roads[self.road_index].width
-        city_map.events.push(WaitingStartEvent(
+        events.push(WaitingStartEvent(
             self.time_stamp + float(length) / min(speed_max,
                 math.sqrt(2.*length/car_num/react_min_time**2.*width)
-            )
+            ),
             self.car_index,
             self.road_index
         ))
         next_car_index = city_map.roads[src_road_index].dequeue(road_index)
-        city_map.events.push(WaitingStopEvent(
+        events.push(WaitingStopEvent(
             self.time_stamp + city_map.roads[src_road_index].queues[road_index].delta_time,
             next_car_index,
             src_road_index,
@@ -48,7 +50,7 @@ class WaitingStopEvent():
 class Events():
     def __init__(self):
         self.events=[]
-    def push(self.to_push)
+    def push(self,to_push):
         heapq.heappush(self.events,to_push)
     def pop(self):
         return heapq.heappop(self.events)
