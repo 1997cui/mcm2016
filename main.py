@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding:utf-8 -*--
+
 import heapq
 import math
 import random
@@ -25,15 +28,21 @@ class Queue():
         self.queue.append(to_push)
 
 class Road:
-    def __init__(self, src, dst, width, length, speed):
+    def __init__(self, src, dst, width, length, speed_m):
         self.src     = int(src)
         self.dst     = int(dst)
         self.width   = int(width)
         self.length  = float(length)
-        self.speed   = float(speed)
-        self.floyd_w = self.length/self.speed
+        self.speed_m   = float(speed_m)
+        self.floyd_w = self.length/self.speed_m
         self.car_num = 0
         self.queues  = {}
+    def expect_time(self):
+        try:
+            speed  = min(math.sqrt(2.*self.length/self.car_num/city_map.rct_time**2.*self.width), self.speed_m) # !!! 直路时间
+        except ZeroDivisionError:
+            speed  = self.speed_m
+        return float(self.length) / speed
 
 class CityMap:
     def __init__(self,vtx_num,edg_num,edg_prp,crs_prp,rct_time):
@@ -95,16 +104,8 @@ class MovingEvent(TypoEvent):
         if DEBUG >= 1:
             print("\033[0;32;40mMovingEvent\t: Car %d from Road %d to Road %d at %d\033[0m" % (self.car_index, self.src_road_index, self.road_index, self.time_stamp))
         city_map.roads[self.road_index].car_num += 1
-        length     = city_map.roads[self.road_index].length
-        speed_max  = city_map.roads[self.road_index].speed
-        car_num    = city_map.roads[self.road_index].car_num
-        width      = city_map.roads[self.road_index].width
-        try:
-            speed  = min(math.sqrt(2.*length/car_num/react_min_time**2.*width), speed_max) # !!!
-        except:
-            speed  = speed_max
         city_map.events.push(WaitingEvent(
-            self.time_stamp + float(length) / speed,
+            self.time_stamp + city_map.roads[self.road_index].expect_time(),
             self.car_index,
             self.road_index
         ))
@@ -129,7 +130,7 @@ class CheckEvent(TypoEvent):
         except IndexError:
             pass
         city_map.events.push(CheckEvent(
-            self.time_stamp + city_map.roads[self.src_road_index].queues[self.road_index].k, # !!!
+            self.time_stamp + city_map.roads[self.src_road_index].queues[self.road_index].k, # !!! 路口等待时间
             self.src_road_index,
             self.road_index
         ))
@@ -162,10 +163,11 @@ class Car:
             self.endtime = float(time_stamp)
             print("\033[0;36;40mDST \t\t: Car %d from %d(%d) to %d(%d)\033[0m"%(self.ind,self.src,self.startime,self.dst,self.endtime))
             return None
-        to_ran = city_map.vtx[crrt_vtx][1] # !!!
-        le     = len(to_ran)
-        a      = int(random.random()*le)
-        return to_ran[a]
+        outer_road = city_map.vtx[crrt_vtx][1] # !!! 这里的老司机分两种，知道大路/小路 知道堵/不堵 待完善
+        expect1    = [city_map.floyd_network[city_map.roads[i].dst][self.dst] for i in outer_road]
+        expect2    = [city_map.roads[i].expect_time() for i in outer_road]
+        index      = reduce(lambda x,y:x if (expect1[y] == -1)or(expect1[x]+expect2[x]<expect1[y]+expect2[y]) else y,range(len(outer_road)))
+        return outer_road[index]
     def __call__(self):
         city_map.events.push(MovingEvent(self.startime,self.ind,-1,self.next_road(self.src,self.startime)))
 
