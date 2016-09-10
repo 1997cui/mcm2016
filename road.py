@@ -6,15 +6,18 @@ class Road:
         self.crowd = crowd
         self.length = length
         self.speed = speed
-        self.carnum = 0
+        self.car_num = 0
+        self.queue = []
 
-
+    def enqueue(self, ):
 class Map:
     def __init__(self, n=10):
         self.roads = [None] * n
-        self.crosses = []
+        self.crosses = [None] * n
+        for i in range(0, n):
+            pass
 
-    def addroad(self, src=0, dst=0, crowd=0, length=1000, speed=10):
+    def add_road(self, src=0, dst=0, crowd=0, length=1000, speed=10):
         t = Road(src, dst, crowd, length, speed)
         t.next = self.roads[src]
         self.roads[src] = t
