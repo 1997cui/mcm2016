@@ -1,5 +1,6 @@
 from road import city_map
 import math
+import heapq
 
 react_min_time = 3.
 
@@ -33,3 +34,12 @@ class WaitingStopEvent():
             self.car_index,
             self.road_index
         ))
+
+class Events():
+    def __init__(self):
+        self.events=[]
+    def push(self,to_push)
+        heapq.heappush(self.events,to_push)
+    def pop(self):
+        return heapq.heappop(self.events)
+
