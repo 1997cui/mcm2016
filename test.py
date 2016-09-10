@@ -1,6 +1,8 @@
+import heapq
 import math
 import random
-import heapq
+
+react_min_time = 3.0
 
 class Queue():
     def __init__(self,src,dst,k):
@@ -34,7 +36,7 @@ class CityMap:
         self.events  = Events()
         for i in edg_prp:
             self.roads.append(Road(i[0],i[1],i[2],i[3],i[4]))
-        self.vtx     = [[[],[]] for i in xrange(vtx_num)]
+        self.vtx = [[[], []] for i in range(vtx_num)]
         for i,j in enumerate(self.roads):
             self.vtx[j.src][1].append(i)
             self.vtx[j.dst][0].append(i)
@@ -63,7 +65,7 @@ class WaitingStopEvent():
     def __cmp__(self,other):
         return self.time_stamp < other.time_stamp
     def __call__(self):
-        print "Car %d from Road %d to Road %d"%(self.car_index,self.src_road_index,self.road_index)
+        print("Car %d from Road %d to Road %d" % (self.car_index, self.src_road_index, self.road_index))
         city_map.roads[self.road_index].car_num += 1
         length     = city_map.roads[self.road_index].length
         speed_max  = city_map.roads[self.road_index].speed
@@ -90,11 +92,11 @@ class CheckEvent():
     def __call__(self):
         try:
             next_car_index = city_map.roads[self.src_road_index].queues[self.road_index].pop()
-            events.push(WaitingStopEvent(
+            city_map.events.push(WaitingStopEvent(
                 self.time_stamp,
                 next_car_index,
-                src_road_index,
-                city_map.cars[next_car].next_road(),
+                self.src_road_index,
+                city_map.cars[next_car_index].next_road(),
             ))
         except IndexError:
             pass
