@@ -63,6 +63,7 @@ class WaitingStopEvent():
     def __cmp__(self,other):
         return self.time_stamp < other.time_stamp
     def __call__(self):
+        print "Car %d from Road %d to Road %d"%(self.car_index,self.src_road_index,self.road_index)
         city_map.roads[self.road_index].car_num += 1
         length     = city_map.roads[self.road_index].length
         speed_max  = city_map.roads[self.road_index].speed
@@ -112,12 +113,14 @@ class Events():
         return heapq.heappop(self.events)
 
 class Car:
-    def __init__(self,id,startime,src,dest):
+    def __init__(self,id,startime,src,dst):
         self.id       = id
         self.startime = startime
         self.src      = src
-        self.dest     = dest
+        self.dst      = dst
     def next_road(self,crrt_vtx):
+        if crrt_vtx == self.dst:
+            return None
         to_ran = city_map.vtx[crrt_vtx][1]
         le     = len(to_ran)
         a      = int(random.random()*le)
@@ -125,7 +128,7 @@ class Car:
     def __call__(self):
         city_map.events.push(WaitingStopEvent(self.startime,self.id,-1,self.next_road(self.src)))
 
-city_map = CityMap(2,2,[[0,1,1,1000,10],[1,0,1,1000,10]],[{1:10},{0:10}])
+city_map = CityMap(3,2,[[0,1,1,1000,10],[1,2,1,1000,10]],[{1:10},{}])
 
 def main():
     global city_map
