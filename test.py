@@ -1,4 +1,5 @@
 import math
+import random
 import heapq
 
 class Queue():
@@ -8,9 +9,11 @@ class Queue():
         self.queue = []
         self.k     = k
     def pop(self):
-        self.queue.pop()
+        to_return  = self.queue[0]
+        self.queue = self.queue[1:]
+        return to_return
     def push(self, to_push):
-        self.queue.push(to_push)
+        self.queue.append(to_push)
 
 class Road:
     def __init__(self, src, dst, width, length, speed):
@@ -20,24 +23,24 @@ class Road:
         self.length  = length
         self.speed   = speed
         self.car_num = 0
-        self.queue   = {}
+        self.queues  = {}
 
 class CityMap:
     def __init__(self,vtx_num,edg_num,edg_prp,crs_prp):
         self.vtx_num = vtx_num
         self.edg_num = edg_num
-        self.edg     = []
+        self.roads   = []
         self.cars    = []
-        self.events  = []
+        self.events  = Events()
         for i in edg_prp:
-            self.edg.push(Road(i[0],i[1],i[2],i[3],i[4]))
+            self.roads.append(Road(i[0],i[1],i[2],i[3],i[4]))
         self.vtx     = [[[],[]] for i in xrange(vtx_num)]
-        for i,j in enumerate(self.edg):
+        for i,j in enumerate(self.roads):
             self.vtx[j.src][1].append(i)
             self.vtx[j.dst][0].append(i)
-        for i in self.edg:
-            for j in self.vtx[self.edg.dst][1]:
-                i.queue[j]=[]
+        for index,i in enumerate(self.roads):
+            for j in self.vtx[i.dst][1]:
+                i.queues[j]=Queue(index,j,crs_prp[index][j])
 
 class WaitingStartEvent():
     def __init__(self,time_stamp,car_index,road_index):
@@ -47,8 +50,8 @@ class WaitingStartEvent():
     def __cmp__(self,other):
         return self.time_stamp < other.time_stamp
     def __call__(self):
-        next_road = city_map.cars[self.car_index].next_road()
-        city_map.roads[self.road_index].enqueue(next_road,car_index)
+        next_road = city_map.cars[self.car_index].next_road(city_map.roads[self.road_index].dst)
+        city_map.roads[self.road_index].queues[next_road].push(self.car_index)
         city_map.roads[self.road_index].car_num -= 1
 
 class WaitingStopEvent():
@@ -69,16 +72,12 @@ class WaitingStopEvent():
             speed  = min(math.sqrt(2.*length/car_num/react_min_time**2.*width), speed_max)
         except:
             speed  = speed_max
-        events.push(WaitingStartEvent(
+        city_map.events.push(WaitingStartEvent(
             self.time_stamp + float(length) / speed,
             self.car_index,
             self.road_index
         ))
-        events.push(CheckEvent(
-            self.time_stamp + city_map.roads[self.src_road_index].find_next_road(self.road_index)[2],
-            self.src_road_index,
-            self.road_index
-        ))
+       
         
 class CheckEvent():
     def __init__(self,time_stamp,src_road_index,road_index):
@@ -88,14 +87,21 @@ class CheckEvent():
     def __cmp__(self,other):
         return self.time_stamp < other.time_stamp
     def __call__(self):
-        next_car_index = city_map.roads[self.src_road_index].dequeue(self.road_index)
-        events.push(WaitingStopEvent(
-            self.time_stamp,
-            next_car_index,
-            src_road_index,
-            city_map.cars[next_car].next_road(),
+        try:
+            next_car_index = city_map.roads[self.src_road_index].queues[self.road_index].pop()
+            events.push(WaitingStopEvent(
+                self.time_stamp,
+                next_car_index,
+                src_road_index,
+                city_map.cars[next_car].next_road(),
+            ))
+        except IndexError:
+            pass
+        city_map.events.push(CheckEvent(
+            self.time_stamp + city_map.roads[self.src_road_index].queues[self.road_index].k,
+            self.src_road_index,
+            self.road_index
         ))
-
 
 class Events():
     def __init__(self):
@@ -105,27 +111,31 @@ class Events():
     def pop(self):
         return heapq.heappop(self.events)
 
-
 class Car:
-    def __init__(self,startime_,drivingtime=0,car_index,destination,currentroad,currentqueue=0,drivingdist=0):
-        self.startime =startime
+    def __init__(self,id,startime,src,dest):
+        self.id       = id
+        self.startime = startime
         self.src      = src
         self.dest     = dest
+    def next_road(self,crrt_vtx):
+        to_ran = city_map.vtx[crrt_vtx][1]
+        le     = len(to_ran)
+        a      = int(random.random()*le)
+        return to_ran[a]
+    def __call__(self):
+        city_map.events.push(WaitingStopEvent(self.startime,self.id,-1,self.next_road(self.src)))
 
-
-
-city_map = Map(2)
-events = Events()
+city_map = CityMap(2,2,[[0,1,1,1000,10],[1,0,1,1000,10]],[{1:10},{0:10}])
 
 def main():
     global city_map
-    global events
-    city_map.add_road(src=0, dst=1,width=1)
-    city_map.add_road(src=1, dst=0,width=1)
-    city_map.init_queue()
-    events.push(WaitingStopEvent(0, 0, 0, 1))
-    events.push(WaitingStopEvent(0, 0, 0, 1))
+    city_map.cars.append(Car(0,0,0,1))
+    for i in city_map.cars:
+        i()
+    for index,i in enumerate(city_map.roads):
+        for j in i.queues.keys():
+            city_map.events.push(CheckEvent(0,index,j))
     while True:
-        events.pop()()
+        city_map.events.pop()()
 if __name__ == "__main__":
     main()
