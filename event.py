@@ -17,10 +17,13 @@ class WaitingStartEvent():
         city_map.roads[self.road_index].car_number -= 1
 
 class WaitingStopEvent():
-    def __init__(self,time_stamp,car_index,road_index):
-        self.time_stamp = time_stamp
-        self.car_index = car_index
-        self.road_index = road_index
+    def __init__(self,time_stamp,car_index,src_road_index,road_index):
+        self.time_stamp     = time_stamp
+        self.car_index      = car_index
+        self.src_road_index = src_road_index
+        self.road_index     = road_index
+    def __cmp__(self,other):
+        return self.time_stamp < other.time_stamp
     def __call__(self):
         city_map.roads[self.road_index].car_number += 1
         length     = city_map.roads[self.road_index].length
@@ -33,6 +36,13 @@ class WaitingStopEvent():
             )
             self.car_index,
             self.road_index
+        ))
+        next_car_index = city_map.roads[src_road_index].queues[road_index].pop()
+        city_map.events.push(WaitingStopEvent(
+            self.time_stamp + city_map.roads[src_road_index].queues[road_index].delta_time,
+            next_car_index,
+            src_road_index,
+            city_map.cars[next_car].next_road(),
         ))
 
 class Events():
