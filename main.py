@@ -133,7 +133,9 @@ class WaitingEvent(TypoEvent):
                 self.car_index, self.road_index, self.time_stamp))
         next_road = city_map.cars[self.car_index].next_road(city_map.roads[self.road_index].dst, self.time_stamp)
         city_map.roads[self.road_index].car_num -= 1
-        if next_road is None: return
+        if next_road is None:
+            city_map.roads[self.road_index].orf_chg(-1)
+            return
         city_map.roads[self.road_index].queues[next_road].push(self.car_index)
 
 
