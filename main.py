@@ -93,9 +93,9 @@ class TypoEvent():
 
 class WaitingEvent(TypoEvent):
     def __init__(self, time_stamp, car_index, road_index):
-        self.time_stamp = time_stamp
-        self.car_index = car_index
-        self.road_index = road_index
+        self.time_stamp = float(time_stamp)
+        self.car_index = int(car_index)
+        self.road_index = int(road_index)
 
     def __call__(self):
         if DEBUG >= 1:
