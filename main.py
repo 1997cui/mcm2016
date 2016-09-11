@@ -5,6 +5,7 @@ import heapq
 import math
 import os
 import time
+import random
 
 try:
     DEBUG = int(os.getenv("DEBUG"))
@@ -43,16 +44,18 @@ class Road:
 
     def expect_time(self):
         try:
-            speed = min(math.sqrt(2. * (
-            self.length - self.car_num * city_map.car_len) / self.car_num / city_map.rct_time ** 2. * self.width),
-                        self.speed_m)  # !!! 直路时间
+            speed = min(math.sqrt(2. * max(city_map.min_dis,
+                self.length - self.car_num * city_map.car_len /self.width) /
+                self.car_num / city_map.rct_time ** 2. * self.width),
+                self.speed_m)  # !!! 直路时间
         except ZeroDivisionError:
             speed = self.speed_m
         return float(self.length) / speed
 
 
 class CityMap:
-    def __init__(self, vtx_num, edg_num, edg_prp, crs_prp, rct_time, car_len):
+    def __init__(self, vtx_num, edg_num, edg_prp, crs_prp, rct_time, car_len, min_dis):
+        self.min_dis = float(min_dis)
         self.car_len = float(car_len)
         self.vtx_num = int(vtx_num)
         self.edg_num = int(edg_num)
@@ -229,6 +232,9 @@ class Car:
 
 def main():
     global city_map
+    car_num = 100
+    xpt_del = 3.0
+    lbd_car = 1./xpt_del
     city_map = CityMap(6, 14, [
         [0,1,3,173,11.11],
         [1,0,3,173,11.11],
@@ -244,22 +250,24 @@ def main():
         [2,3,2,78,8.33],
         [1,3,2,293,8.33],
         [3,1,2,293,8.33]
-    ],[{12:45,1:60},
-       {2:15,0:60},
-       {3:30,4:30,8:15},
-       {0:60,2:45},
-       {5:30,6:15},
-       {4:30,3:30,8:60},
-       {7:30,11:15},
-       {6:30,5:60},
-       {9:30,10:60,13:15},
-       {8:60,3:60,4:15},
-       {7:60,11:30},
-       {10:30,9:15,13:30},
-       {9:60,10:30,13:30},
-       {12:30,1:15}], 3.0, 4.3)
-    for i in range(50):
-        city_map.cars.append(Car(i, i, 2, 0))
+    ],[{12:15,1:20},
+       {2:5,0:20},
+       {3:10,4:10,8:5},
+       {0:20,2:15},
+       {5:10,6:5},
+       {4:10,3:10,8:20},
+       {7:10,11:5},
+       {6:10,5:20},
+       {9:10,10:20,13:5},
+       {8:20,3:20,4:5},
+       {7:20,11:10},
+       {10:10,9:5,13:10},
+       {9:20,10:10,13:10},
+       {12:10,1:5}], 3.0, 4.3, 0.1)
+    tmp = 0.
+    for i in range(car_num):
+        city_map.cars.append(Car(i, tmp, 2, 0))
+        tmp += - xpt_del * math.log(random.random())
     for i in city_map.cars:
         i()
     for index, i in enumerate(city_map.roads):
