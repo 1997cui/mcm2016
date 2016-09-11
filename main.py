@@ -241,7 +241,7 @@ class Car:
         outer_road = city_map.vtx[crrt_vtx][1]
         city_map.floyd()
         expect1 = [city_map.floyd_network[city_map.roads[i].dst][self.dst] for i in outer_road]
-        expect2 = [city_map.roads[i].expect_time() for i in outer_road]
+        expect2 = [city_map.roads[i].expect_time(go = False) for i in outer_road]
         index = reduce(
             lambda x, y: x if (expect1[y] == -1) or (expect1[x] + expect2[x] < expect1[y] + expect2[y]) else y,
             range(len(outer_road)))
