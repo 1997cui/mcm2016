@@ -270,6 +270,7 @@ def main():
         city_map.events.pop()()
     print "Average Speed of Each Roads : %s"%([-1 if i.tln is 0 else i.tls / i.tln for i in city_map.roads])
     print "Average OcRaF of Each Roads : %s"%([float(i.orf_max*city_map.car_len)/float(i.length*i.width) for i in city_map.roads])
+    print "Average Time used by Cars   : %.2f"%(sum([i.endtime - i.startime for i in city_map.cars])/len(city_map.cars))
 
 if __name__ == "__main__":
     try:
