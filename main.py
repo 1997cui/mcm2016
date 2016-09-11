@@ -69,6 +69,12 @@ class CityMap:
                 i.queues[j] = Queue(index, j, crs_prp[index][j])
         self.floyd()
 
+    def check_run_car(self):
+        for i in self.cars:
+            if i.path[-1] != i.dst:
+                return True
+        return False
+
     def floyd(self):
         self.floyd_network = [[-1 for i in range(self.vtx_num)] for j in range(self.vtx_num)]
         for i in self.roads:
@@ -102,9 +108,9 @@ class WaitingEvent(TypoEvent):
             print("\033[0;31;40mWaitingEvent\t: Car %d in Road %d at %.2f\033[0m" % (
                 self.car_index, self.road_index, self.time_stamp))
         next_road = city_map.cars[self.car_index].next_road(city_map.roads[self.road_index].dst, self.time_stamp)
+        city_map.roads[self.road_index].car_num -= 1
         if next_road is None: return
         city_map.roads[self.road_index].queues[next_road].push(self.car_index)
-        city_map.roads[self.road_index].car_num -= 1
 
 
 class MovingEvent(TypoEvent):
@@ -186,8 +192,9 @@ class Car:
         self.path.append(crrt_vtx)
         if int(crrt_vtx) == self.dst:
             self.endtime = float(time_stamp)
-            print("\033[0;36;40mDST \t\t: Car %d from %d(%.2f) to %d(%.2f)\033[0m" % (
-                self.ind, self.src, self.startime, self.dst, self.endtime))
+            print("\033[0;36;40mDST \t\t: Car %d from %d(%.2f) to %d(%.2f)\033[0m\n\
+\033[0;36;40mpath : %s \033[0m" % (
+                self.ind, self.src, self.startime, self.dst, self.endtime, self.path))
             return None
         outer_road = city_map.vtx[crrt_vtx][1]  # !!! 这里的老司机分两种，知道大路/小路 知道堵/不堵 待完善
         expect1 = [city_map.floyd_network[city_map.roads[i].dst][self.dst] for i in outer_road]
@@ -221,20 +228,19 @@ def main():
                         {7: 60, 0: 1},
                         {6: 60, 5: 60}]
                        , 3.0)
-    for i in range(10):
+    for i in range(100):
         city_map.cars.append(Car(i, i, 2, 0))
     for i in city_map.cars:
         i()
     for index, i in enumerate(city_map.roads):
         for j in i.queues.keys():
             city_map.events.push(CheckEvent(0, index, j))
-    while True:
+    while city_map.check_run_car():
         if DEBUG >= 1:
             time.sleep(0.01)
         if DEBUG >= 2:
             print city_map.events
         city_map.events.pop()()
-
 
 if __name__ == "__main__":
     try:
