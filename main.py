@@ -5,6 +5,7 @@ import heapq
 import math
 import os
 import time
+import random
 
 try:
     DEBUG = int(os.getenv("DEBUG"))
@@ -231,6 +232,9 @@ class Car:
 
 def main():
     global city_map
+    car_num = 100
+    xpt_del = 3.0
+    lbd_car = 1./xpt_del
     city_map = CityMap(6, 14, [
         [0,1,3,173,11.11],
         [1,0,3,173,11.11],
@@ -260,8 +264,10 @@ def main():
        {10:10,9:5,13:10},
        {9:20,10:10,13:10},
        {12:10,1:5}], 3.0, 4.3, 0.1)
-    for i in range(100):
-        city_map.cars.append(Car(i, i, 2, 0))
+    tmp = 0.
+    for i in range(car_num):
+        city_map.cars.append(Car(i, tmp, 2, 0))
+        tmp += - xpt_del * math.log(random.random())
     for i in city_map.cars:
         i()
     for index, i in enumerate(city_map.roads):
