@@ -53,7 +53,7 @@ class Road:
 
 class CityMap:
     def __init__(self, vtx_num, edg_num, edg_prp, crs_prp, rct_time, car_len):
-        self.car_len = int(car_len)
+        self.car_len = float(car_len)
         self.vtx_num = int(vtx_num)
         self.edg_num = int(edg_num)
         self.roads = []
