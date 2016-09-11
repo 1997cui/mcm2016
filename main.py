@@ -4,8 +4,8 @@
 import heapq
 import math
 import os
-import time
 import random
+import time
 
 from input import data
 
@@ -256,7 +256,7 @@ def main():
         if DEBUG >= 2:
             print city_map.events
         city_map.events.pop()()
-    print [-1 if i.tln is 0 else i.tls/i.tln for i in city_map.roads]
+    print [-1 if i.tln is 0 else i.tls / i.tln for i in city_map.roads]
 
 if __name__ == "__main__":
     try:
