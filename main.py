@@ -51,7 +51,7 @@ class Road:
             speed = min(math.sqrt(2. * max(city_map.min_dis,
                 self.length - self.car_num * city_map.car_len /self.width) /
                 self.car_num / city_map.rct_time ** 2. * self.width),
-                self.speed_m)  # !!! 直路时间
+                self.speed_m)
         except ZeroDivisionError:
             speed = self.speed_m
         self.tln += 1
@@ -182,7 +182,7 @@ class CheckEvent(TypoEvent):
         except IndexError:
             pass
         city_map.events.push(CheckEvent(
-            self.time_stamp + city_map.roads[self.src_road_index].queues[self.road_index].k * city_map.c_k,  # !!! 路口等待时间
+            self.time_stamp + city_map.roads[self.src_road_index].queues[self.road_index].k * city_map.c_k / min(city_map.roads[self.src_road_index].width, city_map.roads[self.road_index].width),
             self.src_road_index,
             self.road_index
         ))
@@ -225,7 +225,7 @@ class Car:
 \033[0;36;40mpath : %s \033[0m" % (
                 self.ind, self.src, self.startime, self.dst, self.endtime, self.path))
             return None
-        outer_road = city_map.vtx[crrt_vtx][1]  # !!! 这里的老司机分两种，知道大路/小路 知道堵/不堵 待完善
+        outer_road = city_map.vtx[crrt_vtx][1]
         expect1 = [city_map.floyd_network[city_map.roads[i].dst][self.dst] for i in outer_road]
         expect2 = [city_map.roads[i].expect_time() for i in outer_road]
         index = reduce(
