@@ -99,7 +99,7 @@ class WaitingEvent(TypoEvent):
 
     def __call__(self):
         if DEBUG >= 1:
-            print("\033[0;31;40mWaitingEvent\t: Car %d in Road %d at %d\033[0m" % (
+            print("\033[0;31;40mWaitingEvent\t: Car %d in Road %d at %.2f\033[0m" % (
                 self.car_index, self.road_index, self.time_stamp))
         next_road = city_map.cars[self.car_index].next_road(city_map.roads[self.road_index].dst, self.time_stamp)
         if next_road is None: return
@@ -116,7 +116,7 @@ class MovingEvent(TypoEvent):
 
     def __call__(self):
         if DEBUG >= 1:
-            print("\033[0;32;40mMovingEvent\t: Car %d from Road %d to Road %d at %d\033[0m" % (
+            print("\033[0;32;40mMovingEvent\t: Car %d from Road %d to Road %d at %.2f\033[0m" % (
                 self.car_index, self.src_road_index, self.road_index, self.time_stamp))
         city_map.roads[self.road_index].car_num += 1
         city_map.events.push(WaitingEvent(
@@ -134,7 +134,7 @@ class CheckEvent(TypoEvent):
 
     def __call__(self):
         if DEBUG >= 1:
-            print("\033[0;34;40mCheckEvent\t: From Road %d tp Road %d at %d\033[0m" % (
+            print("\033[0;34;40mCheckEvent\t: From Road %d tp Road %d at %.2f\033[0m" % (
                 self.src_road_index, self.road_index, self.time_stamp))
         try:
             next_car_index = city_map.roads[self.src_road_index].queues[self.road_index].pop()
@@ -170,7 +170,7 @@ class Events():
             if isinstance(i, WaitingEvent): color = "\033[0;31;40m"
             if isinstance(i, MovingEvent): color = "\033[0;32;40m"
             if isinstance(i, CheckEvent): color = "\033[0;34;40m"
-            to_print += "%s%d%s" % (color, i.time_stamp, " \033[0m")
+            to_print += "%s%.2f%s" % (color, i.time_stamp, " \033[0m")
         return to_print
 
 
@@ -184,7 +184,7 @@ class Car:
     def next_road(self, crrt_vtx, time_stamp):
         if int(crrt_vtx) == self.dst:
             self.endtime = float(time_stamp)
-            print("\033[0;36;40mDST \t\t: Car %d from %d(%d) to %d(%d)\033[0m" % (
+            print("\033[0;36;40mDST \t\t: Car %d from %d(%.2f) to %d(%.2f)\033[0m" % (
                 self.ind, self.src, self.startime, self.dst, self.endtime))
             return None
         outer_road = city_map.vtx[crrt_vtx][1]  # !!! 这里的老司机分两种，知道大路/小路 知道堵/不堵 待完善
