@@ -45,6 +45,13 @@ class Road:
         self.floyd_w = self.length / self.speed_m
         self.car_num = 0
         self.queues = {}
+        self.orf = 0
+        self.orf_max = 0
+
+    def orf_chg(self, n):
+        self.orf += n
+        if self.orf > self.orf_max:
+            self.orf_max = self.orf
 
     def expect_time(self):
         try:
@@ -142,6 +149,9 @@ class MovingEvent(TypoEvent):
             print("\033[0;32;40mMovingEvent\t: Car %d from Road %d to Road %d at %.2f\033[0m" % (
                 self.car_index, self.src_road_index, self.road_index, self.time_stamp))
         city_map.roads[self.road_index].car_num += 1
+        city_map.roads[self.road_index].orf_chg(+1)
+        if self.src_road_index != -1:
+            city_map.roads[self.src_road_index].orf_chg(-1)
         city_map.events.push(WaitingEvent(
             self.time_stamp + city_map.roads[self.road_index].expect_time(),
             self.car_index,
@@ -257,7 +267,8 @@ def main():
         if DEBUG >= 2:
             print city_map.events
         city_map.events.pop()()
-    print [-1 if i.tln is 0 else i.tls / i.tln for i in city_map.roads]
+    print "Average Speed of Each Roads : %s"%([-1 if i.tln is 0 else i.tls / i.tln for i in city_map.roads])
+    print "Average OcRaF of Each Roads : %s"%([float(i.orf_max*city_map.car_len)/float(i.length*i.width) for i in city_map.roads])
 
 if __name__ == "__main__":
     try:
