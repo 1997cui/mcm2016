@@ -180,8 +180,10 @@ class Car:
         self.startime = float(startime)
         self.src = int(src)
         self.dst = int(dst)
+        self.path = []
 
     def next_road(self, crrt_vtx, time_stamp):
+        self.path.append(crrt_vtx)
         if int(crrt_vtx) == self.dst:
             self.endtime = float(time_stamp)
             print("\033[0;36;40mDST \t\t: Car %d from %d(%.2f) to %d(%.2f)\033[0m" % (
@@ -228,7 +230,7 @@ def main():
             city_map.events.push(CheckEvent(0, index, j))
     while True:
         if DEBUG >= 1:
-            time.sleep(0.2)
+            time.sleep(0.01)
         if DEBUG >= 2:
             print city_map.events
         city_map.events.pop()()
