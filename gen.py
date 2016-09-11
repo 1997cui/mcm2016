@@ -20,7 +20,14 @@ class CityMap:
             self.vtx[j.dst][0].append(i)
         for index, i in enumerate(self.roads):
             for j in self.vtx[i.dst][1]:
-                crs_prp[index][j] = 0
+                flag = True
+                while flag:
+                    try:
+                        print "\nFrom %d to %d : "%(index,j)
+                        crs_prp[index][j] = float(raw_input())
+                        flag = False
+                    except:
+                        pass
         print crs_prp
 
 def main():
