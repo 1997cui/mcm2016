@@ -255,8 +255,8 @@ def main():
         for j in i.queues.keys():
             city_map.events.push(CheckEvent(0, index, j))
     while city_map.check_run_car():
-        if DEBUG >= 1:
-            time.sleep(0.01)
+        #if DEBUG >= 1:
+        #    time.sleep(0.01)
         if DEBUG >= 2:
             print city_map.events
         city_map.events.pop()()
