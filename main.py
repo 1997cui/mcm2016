@@ -43,7 +43,8 @@ class Road:
 
     def expect_time(self):
         try:
-            speed = min(math.sqrt(2. * self.length / self.car_num / city_map.rct_time ** 2. * self.width),
+            speed = min(math.sqrt(2. * (
+            self.length - self.car_num * city_map.car_len) / self.car_num / city_map.rct_time ** 2. * self.width),
                         self.speed_m)  # !!! 直路时间
         except ZeroDivisionError:
             speed = self.speed_m
@@ -51,7 +52,8 @@ class Road:
 
 
 class CityMap:
-    def __init__(self, vtx_num, edg_num, edg_prp, crs_prp, rct_time):
+    def __init__(self, vtx_num, edg_num, edg_prp, crs_prp, rct_time, car_len):
+        self.car_len = int(car_len)
         self.vtx_num = int(vtx_num)
         self.edg_num = int(edg_num)
         self.roads = []
@@ -71,12 +73,17 @@ class CityMap:
 
     def check_run_car(self):
         for i in self.cars:
-            if i.path[-1] != i.dst:
+            try:
+                if i.path[-1] != i.dst:
+                    return True
+            except IndexError:
                 return True
         return False
 
     def floyd(self):
         self.floyd_network = [[-1 for i in range(self.vtx_num)] for j in range(self.vtx_num)]
+        for i in range(self.vtx_num):
+            self.floyd_network[i][i] = 0
         for i in self.roads:
             self.floyd_network[i.src][i.dst] = i.floyd_w
         flag = True
@@ -131,6 +138,18 @@ class MovingEvent(TypoEvent):
             self.road_index
         ))
 
+
+class StartEvent(TypoEvent):
+    def __init__(self, time_stamp, car_index):
+        self.time_stamp = float(time_stamp)
+        self.car_index = int(car_index)
+
+    def __call__(self):
+        if DEBUG >= 1:
+            print("\033[0;38;40mStartEvent\t: Car %d start at %.2f\033[0m" % (
+                self.car_index, self.time_stamp))
+        temp = city_map.cars[self.car_index]
+        city_map.events.push(MovingEvent(temp.startime, temp.ind, -1, temp.next_road(temp.src, temp.startime)))
 
 class CheckEvent(TypoEvent):
     def __init__(self, time_stamp, src_road_index, road_index):
@@ -205,7 +224,7 @@ class Car:
         return outer_road[index]
 
     def __call__(self):
-        city_map.events.push(MovingEvent(self.startime, self.ind, -1, self.next_road(self.src, self.startime)))
+        city_map.events.push(StartEvent(self.startime, self.ind))
 
 
 def main():
@@ -227,7 +246,7 @@ def main():
                         {4: 60, 3: 80},
                         {7: 60, 0: 1},
                         {6: 60, 5: 60}]
-                       , 3.0)
+                       , 3.0, 4.3)
     for i in range(100):
         city_map.cars.append(Car(i, i, 2, 0))
     for i in city_map.cars:
