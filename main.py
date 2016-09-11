@@ -51,7 +51,7 @@ class Road:
             speed = min(math.sqrt(2. * max(city_map.min_dis,
                 self.length - self.car_num * city_map.car_len /self.width) /
                 self.car_num / city_map.rct_time ** 2. * self.width),
-                self.speed_m)
+                        self.speed_m)
         except ZeroDivisionError:
             speed = self.speed_m
         self.tln += 1
@@ -182,7 +182,8 @@ class CheckEvent(TypoEvent):
         except IndexError:
             pass
         city_map.events.push(CheckEvent(
-            self.time_stamp + city_map.roads[self.src_road_index].queues[self.road_index].k * city_map.c_k / min(city_map.roads[self.src_road_index].width, city_map.roads[self.road_index].width),
+            self.time_stamp + city_map.roads[self.src_road_index].queues[self.road_index].k * city_map.c_k / min(
+                city_map.roads[self.src_road_index].width, city_map.roads[self.road_index].width),
             self.src_road_index,
             self.road_index
         ))
