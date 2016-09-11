@@ -7,6 +7,8 @@ import os
 import time
 import random
 
+from input import data
+
 try:
     DEBUG = int(os.getenv("DEBUG"))
 except TypeError:
@@ -33,6 +35,8 @@ class Queue():
 
 class Road:
     def __init__(self, src, dst, width, length, speed_m):
+        self.tln = 0
+        self.tls = 0.
         self.src = int(src)
         self.dst = int(dst)
         self.width = int(width)
@@ -50,11 +54,14 @@ class Road:
                 self.speed_m)  # !!! 直路时间
         except ZeroDivisionError:
             speed = self.speed_m
+        self.tln += 1
+        self.tls += speed
         return float(self.length) / speed
 
 
 class CityMap:
-    def __init__(self, vtx_num, edg_num, edg_prp, crs_prp, rct_time, car_len, min_dis):
+    def __init__(self, vtx_num, edg_num, edg_prp, crs_prp, rct_time, car_len, min_dis, c_k):
+        self.c_k = c_k
         self.min_dis = float(min_dis)
         self.car_len = float(car_len)
         self.vtx_num = int(vtx_num)
@@ -175,7 +182,7 @@ class CheckEvent(TypoEvent):
         except IndexError:
             pass
         city_map.events.push(CheckEvent(
-            self.time_stamp + city_map.roads[self.src_road_index].queues[self.road_index].k,  # !!! 路口等待时间
+            self.time_stamp + city_map.roads[self.src_road_index].queues[self.road_index].k * city_map.c_k,  # !!! 路口等待时间
             self.src_road_index,
             self.road_index
         ))
@@ -232,39 +239,11 @@ class Car:
 
 def main():
     global city_map
-    car_num = 100
-    xpt_del = 3.0
-    lbd_car = 1./xpt_del
-    city_map = CityMap(6, 14, [
-        [0,1,3,173,11.11],
-        [1,0,3,173,11.11],
-        [0,4,2,321,8.33],
-        [4,0,2,321,8.33],
-        [4,5,2,66,8.33],
-        [5,4,2,66,8.33],
-        [5,2,2,182,8.33],
-        [2,5,2,182,8.33],
-        [4,3,1,182,8.33],
-        [3,4,1,182,8.33],
-        [3,2,2,78,8.33],
-        [2,3,2,78,8.33],
-        [1,3,2,293,8.33],
-        [3,1,2,293,8.33]
-    ],[{12:15,1:20},
-       {2:5,0:20},
-       {3:10,4:10,8:5},
-       {0:20,2:15},
-       {5:10,6:5},
-       {4:10,3:10,8:20},
-       {7:10,11:5},
-       {6:10,5:20},
-       {9:10,10:20,13:5},
-       {8:20,3:20,4:5},
-       {7:20,11:10},
-       {10:10,9:5,13:10},
-       {9:20,10:10,13:10},
-       {12:10,1:5}], 3.0, 4.3, 0.1)
+    car_num = int(data[7])
+    xpt_del = float(data[8])
+    city_map = CityMap(data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[9])
     tmp = 0.
+    random.seed(time.time())
     for i in range(car_num):
         city_map.cars.append(Car(i, tmp, 2, 0))
         tmp += - xpt_del * math.log(random.random())
@@ -274,11 +253,10 @@ def main():
         for j in i.queues.keys():
             city_map.events.push(CheckEvent(0, index, j))
     while city_map.check_run_car():
-        #if DEBUG >= 1:
-        #    time.sleep(0.01)
         if DEBUG >= 2:
             print city_map.events
         city_map.events.pop()()
+    print [-1 if i.tln is 0 else i.tls/i.tln for i in city_map.roads]
 
 if __name__ == "__main__":
     try:
