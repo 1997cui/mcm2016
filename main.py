@@ -43,16 +43,18 @@ class Road:
 
     def expect_time(self):
         try:
-            speed = min(math.sqrt(2. * (
-            self.length - self.car_num * city_map.car_len) / self.car_num / city_map.rct_time ** 2. * self.width),
-                        self.speed_m)  # !!! 直路时间
+            speed = min(math.sqrt(2. * max(city_map.min_dis,
+                self.length - self.car_num * city_map.car_len /self.width) /
+                self.car_num / city_map.rct_time ** 2. * self.width),
+                self.speed_m)  # !!! 直路时间
         except ZeroDivisionError:
             speed = self.speed_m
         return float(self.length) / speed
 
 
 class CityMap:
-    def __init__(self, vtx_num, edg_num, edg_prp, crs_prp, rct_time, car_len):
+    def __init__(self, vtx_num, edg_num, edg_prp, crs_prp, rct_time, car_len, min_dis):
+        self.min_dis = float(min_dis)
         self.car_len = float(car_len)
         self.vtx_num = int(vtx_num)
         self.edg_num = int(edg_num)
@@ -257,7 +259,7 @@ def main():
        {7:60,11:30},
        {10:30,9:15,13:30},
        {9:60,10:30,13:30},
-       {12:30,1:15}], 3.0, 4.3)
+       {12:30,1:15}], 3.0, 4.3. 0.1)
     for i in range(50):
         city_map.cars.append(Car(i, i, 2, 0))
     for i in city_map.cars:
