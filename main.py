@@ -53,7 +53,7 @@ class Road:
         if self.orf > self.orf_max:
             self.orf_max = self.orf
 
-    def expect_time(self):
+    def expect_time(self, go = True):
         try:
             speed = min(math.sqrt(2. * max(city_map.min_dis,
                 self.length - self.car_num * city_map.car_len /self.width) /
@@ -61,8 +61,9 @@ class Road:
                 self.speed_m)
         except ZeroDivisionError:
             speed = self.speed_m
-        self.tln += 1
-        self.tls += speed
+        if go:
+            self.tln += 1
+            self.tls += speed
         return float(self.length) / speed
 
 
@@ -86,7 +87,6 @@ class CityMap:
         for index, i in enumerate(self.roads):
             for j in self.vtx[i.dst][1]:
                 i.queues[j] = Queue(index, j, crs_prp[index][j])
-        self.floyd()
 
     def check_run_car(self):
         for i in self.cars:
@@ -102,7 +102,7 @@ class CityMap:
         for i in range(self.vtx_num):
             self.floyd_network[i][i] = 0
         for i in self.roads:
-            self.floyd_network[i.src][i.dst] = i.floyd_w
+            self.floyd_network[i.src][i.dst] = i.expect_time(go = False)
         flag = True
         while flag:
             flag = False
@@ -236,6 +236,7 @@ class Car:
                 self.ind, self.src, self.startime, self.dst, self.endtime, self.path))
             return None
         outer_road = city_map.vtx[crrt_vtx][1]
+        city_map.floyd()
         expect1 = [city_map.floyd_network[city_map.roads[i].dst][self.dst] for i in outer_road]
         expect2 = [city_map.roads[i].expect_time() for i in outer_road]
         index = reduce(
