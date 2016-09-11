@@ -4,8 +4,8 @@
 import heapq
 import math
 import os
-import time
 import random
+import time
 
 from input import data
 
@@ -182,7 +182,8 @@ class CheckEvent(TypoEvent):
         except IndexError:
             pass
         city_map.events.push(CheckEvent(
-            self.time_stamp + city_map.roads[self.src_road_index].queues[self.road_index].k * city_map.c_k,  # !!! 路口等待时间
+            self.time_stamp + city_map.roads[self.src_road_index].queues[self.road_index].k * city_map.c_k,
+            # !!! 路口等待时间
             self.src_road_index,
             self.road_index
         ))
@@ -256,7 +257,7 @@ def main():
         if DEBUG >= 2:
             print city_map.events
         city_map.events.pop()()
-    print [-1 if i.tln is 0 else i.tls/i.tln for i in city_map.roads]
+    print [-1 if i.tln is 0 else i.tls / i.tln for i in city_map.roads]
 
 if __name__ == "__main__":
     try:
