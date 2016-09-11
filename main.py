@@ -60,7 +60,8 @@ class Road:
 
 
 class CityMap:
-    def __init__(self, vtx_num, edg_num, edg_prp, crs_prp, rct_time, car_len, min_dis):
+    def __init__(self, vtx_num, edg_num, edg_prp, crs_prp, rct_time, car_len, min_dis, c_k):
+        self.c_k = c_k
         self.min_dis = float(min_dis)
         self.car_len = float(car_len)
         self.vtx_num = int(vtx_num)
@@ -181,7 +182,7 @@ class CheckEvent(TypoEvent):
         except IndexError:
             pass
         city_map.events.push(CheckEvent(
-            self.time_stamp + city_map.roads[self.src_road_index].queues[self.road_index].k,  # !!! 路口等待时间
+            self.time_stamp + city_map.roads[self.src_road_index].queues[self.road_index].k * city_map.c_k,  # !!! 路口等待时间
             self.src_road_index,
             self.road_index
         ))
@@ -240,7 +241,7 @@ def main():
     global city_map
     car_num = int(data[7])
     xpt_del = float(data[8])
-    city_map = CityMap(data[0], data[1], data[2], data[3], data[4], data[5], data[6])
+    city_map = CityMap(data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[9])
     tmp = 0.
     random.seed(time.time())
     for i in range(car_num):
