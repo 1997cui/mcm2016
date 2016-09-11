@@ -259,8 +259,8 @@ def main():
        {7:60,11:30},
        {10:30,9:15,13:30},
        {9:60,10:30,13:30},
-       {12:30,1:15}], 3.0, 4.3. 0.1)
-    for i in range(50):
+       {12:30,1:15}], 3.0, 4.3, 0.1)
+    for i in range(100):
         city_map.cars.append(Car(i, i, 2, 0))
     for i in city_map.cars:
         i()
