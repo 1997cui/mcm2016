@@ -35,6 +35,8 @@ class Queue():
 
 class Road:
     def __init__(self, src, dst, width, length, speed_m):
+        self.tln = 0
+        self.tls = 0.
         self.src = int(src)
         self.dst = int(dst)
         self.width = int(width)
@@ -52,6 +54,8 @@ class Road:
                 self.speed_m)  # !!! 直路时间
         except ZeroDivisionError:
             speed = self.speed_m
+        self.tln += 1
+        self.tls += speed
         return float(self.length) / speed
 
 
@@ -234,8 +238,8 @@ class Car:
 
 def main():
     global city_map
-    car_num = data[7]
-    xpt_del = data[8]
+    car_num = int(data[7])
+    xpt_del = float(data[8])
     city_map = CityMap(data[0], data[1], data[2], data[3], data[4], data[5], data[6])
     tmp = 0.
     random.seed(time.time())
@@ -251,6 +255,7 @@ def main():
         if DEBUG >= 2:
             print city_map.events
         city_map.events.pop()()
+    print [-1 if i.tln is 0 else i.tls/i.tln for i in city_map.roads]
 
 if __name__ == "__main__":
     try:
